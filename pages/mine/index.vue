@@ -1,77 +1,77 @@
 <template>
-  <view class="mine-container" :style="{height: `${windowHeight}px`}">
-    <!--顶部个人信息栏-->
-    <view class="header-section">
-      <view class="flex padding justify-between">
-        <view class="flex align-center">
-          <view v-if="!avatar" class="cu-avatar xl round bg-white">
-            <view class="iconfont icon-people text-gray icon"></view>
-          </view>
-          <image v-if="avatar" @click="handleToAvatar" :src="avatar" class="cu-avatar xl round" mode="widthFix">
-          </image>
-          <view v-if="!name" @click="handleToLogin" class="login-tip">
-            点击登录
-          </view>
-          <view v-if="name" @click="handleToInfo" class="user-info">
-            <view class="u_title">
-              用户名：{{ name }}
-            </view>
-          </view>
+  <view class="page bg-gray-50 min-h-screen">
+    <!-- 顶部个人信息栏 -->
+    <view class="bg-white p-6 mb-3 flex items-center border-b border-gray-100" @click="handleToInfo">
+      <view class="relative mr-4">
+        <!-- 未登录/无头像 -->
+        <view v-if="!avatar" class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-100">
+          <i class="iconfont icon-people text-gray-400 text-3xl"></i>
         </view>
-        <view @click="handleToInfo" class="flex align-center">
-          <text>个人信息</text>
-          <view class="iconfont icon-right"></view>
+        <!-- 已登录头像 -->
+        <image v-else :src="avatar" class="w-16 h-16 rounded-full border-2 border-gray-100" mode="aspectFill"></image>
+        
+        <!-- 编辑头像图标 -->
+        <view class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow border border-gray-100 w-6 h-6 flex items-center justify-center" @click.stop="handleToAvatar">
+          <i class="fa-solid fa-camera text-gray-400 text-10px"></i>
         </view>
+      </view>
+      
+      <view class="flex-1">
+        <!-- 未登录 -->
+        <view v-if="!name" @click.stop="handleToLogin" class="text-lg font-bold text-gray-800 mb-1">
+          点击登录
+        </view>
+        <!-- 已登录 -->
+        <view v-else>
+          <view class="flex items-center mb-1">
+            <text class="text-lg font-bold text-gray-800 mr-2">{{ name }}</text>
+            <text class="bg-blue-50 text-police text-10px px-2 py-0.5 rounded border border-blue-100">民警</text>
+          </view>
+          <text class="text-gray-500 text-xs">个人信息 ></text>
+        </view>
+      </view>
+      <i class="fa-solid fa-chevron-right text-gray-300"></i>
+    </view>
+
+    <!-- 菜单列表组 1 -->
+    <view class="bg-white mb-3 border-y border-gray-100">
+      <view class="flex items-center p-4 border-b border-gray-100" hover-class="bg-gray-50" @click="handleToEditInfo">
+        <i class="iconfont icon-user text-police opacity-80 w-6 text-lg"></i>
+        <text class="text-sm flex-1 text-gray-700">编辑资料</text>
+        <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+      </view>
+      <view class="flex items-center p-4" hover-class="bg-gray-50" @click="handleToAvatar">
+        <i class="fa-solid fa-image-portrait text-green-500 opacity-80 w-6 text-lg"></i>
+        <text class="text-sm flex-1 text-gray-700">修改头像</text>
+        <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
       </view>
     </view>
 
-    <view class="content-section">
-      <view class="mine-actions grid col-4 text-center">
-        <view class="action-item" @click="handleJiaoLiuQun">
-          <view class="iconfont icon-friendfill text-pink icon"></view>
-          <text class="text">交流群</text>
-        </view>
-        <view class="action-item" @click="handleBuilding">
-          <view class="iconfont icon-service text-blue icon"></view>
-          <text class="text">在线客服</text>
-        </view>
-        <view class="action-item" @click="handleBuilding">
-          <view class="iconfont icon-community text-mauve icon"></view>
-          <text class="text">反馈社区</text>
-        </view>
-        <view class="action-item" @click="handleBuilding">
-          <view class="iconfont icon-dianzan text-green icon"></view>
-          <text class="text">点赞我们</text>
-        </view>
+    <!-- 菜单列表组 2 -->
+    <view class="bg-white mb-6 border-y border-gray-100">
+      <view class="flex items-center p-4 border-b border-gray-100" hover-class="bg-gray-50" @click="handleToSetting">
+        <i class="iconfont icon-setting text-purple-500 opacity-80 w-6 text-lg"></i>
+        <text class="text-sm flex-1 text-gray-700">应用设置</text>
+        <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
       </view>
+    </view>
+    
+    <!-- 退出登录按钮 -->
+    <view class="mt-6" v-if="name">
+      <!-- 按钮怎么还有边框 -->
+      <button @click="handleLogout" class=" bg-white text-red-500 py-4 px-6 rounded-lg text-sm font-bold border mx-4">退出登录</button>  
+    </view>
 
-      <view class="menu-list">
-        <view class="list-cell list-cell-arrow" @click="handleToEditInfo">
-          <view class="menu-item-box">
-            <view class="iconfont icon-user menu-icon"></view>
-            <view>编辑资料</view>
-          </view>
-        </view>
-        <view class="list-cell list-cell-arrow" @click="handleHelp">
-          <view class="menu-item-box">
-            <view class="iconfont icon-help menu-icon"></view>
-            <view>常见问题</view>
-          </view>
-        </view>
-        <view class="list-cell list-cell-arrow" @click="handleAbout">
-          <view class="menu-item-box">
-            <view class="iconfont icon-aixin menu-icon"></view>
-            <view>关于我们</view>
-          </view>
-        </view>
-        <view class="list-cell list-cell-arrow" @click="handleToSetting">
-          <view class="menu-item-box">
-            <view class="iconfont icon-setting menu-icon"></view>
-            <view>应用设置</view>
-          </view>
-        </view>
+    <!-- 底部导航 (固定) -->
+    <view class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 pb-safe z-40 shadow-lg">
+      <view class="flex flex-col items-center text-gray-400" @click="goHome">
+        <i class="fa-solid fa-house text-xl mb-1"></i>
+        <text class="text-10px">首页</text>
       </view>
-
+      <view class="flex flex-col items-center text-police">
+        <i class="fa-regular fa-user text-xl mb-1"></i>
+        <text class="text-10px">我的</text>
+      </view>
     </view>
   </view>
 </template>
@@ -80,10 +80,12 @@
   export default {
     data() {
       return {
-        name: this.$store.state.user.name
       }
     },
     computed: {
+      name() {
+        return this.$store.state.user.name
+      },
       avatar() {
         return this.$store.state.user.avatar
       },
@@ -93,96 +95,45 @@
     },
     methods: {
       handleToInfo() {
-        this.$tab.navigateTo('/pages/mine/info/index')
+        uni.navigateTo({ url: '/pages/mine/info/index' })
       },
       handleToEditInfo() {
-        this.$tab.navigateTo('/pages/mine/info/edit')
+        uni.navigateTo({ url: '/pages/mine/info/edit' })
       },
       handleToSetting() {
-        this.$tab.navigateTo('/pages/mine/setting/index')
+        uni.navigateTo({ url: '/pages/mine/setting/index' })
       },
       handleToLogin() {
-        this.$tab.reLaunch('/pages/login')
+        uni.reLaunch({ url: '/pages/login' })
       },
       handleToAvatar() {
-        this.$tab.navigateTo('/pages/mine/avatar/index')
-      },
-      handleHelp() {
-        this.$tab.navigateTo('/pages/mine/help/index')
-      },
-      handleAbout() {
-        this.$tab.navigateTo('/pages/mine/about/index')
-      },
-      handleJiaoLiuQun() {
-        this.$modal.showToast('QQ群：①133713780(满)、②146013835(满)、③189091635')
+        uni.navigateTo({ url: '/pages/mine/avatar/index' })
       },
       handleBuilding() {
         this.$modal.showToast('模块建设中~')
+      },
+      handleLogout() {
+        this.$modal.confirm('确定注销并退出系统吗？').then(() => {
+          this.$store.dispatch('LogOut').then(() => {
+            uni.reLaunch({ url: '/pages/index' })
+          })
+        })
+      },
+      goHome() {
+        // 跳转回门户首页 (根据之前的路由规划，这里应该是 /pages/index 或 /pages/haircut/portal)
+        // 假设您的门户首页是 /pages/index
+        uni.reLaunch({ url: '/pages/index' })
       }
     }
   }
 </script>
 
-<style lang="scss" scoped>
-  page {
-    background-color: #f5f6f7;
-  }
+<style scoped>
+/* 引入全局样式垫片 */
+@import "/static/css/haircut.css";
 
-  .mine-container {
-    width: 100%;
-    height: 100%;
-
-
-    .header-section {
-      padding: 15px 15px 45px 15px;
-      background-color: #3c96f3;
-      color: white;
-
-      .login-tip {
-        font-size: 18px;
-        margin-left: 10px;
-      }
-
-      .cu-avatar {
-        border: 2px solid #eaeaea;
-
-        .icon {
-          font-size: 40px;
-        }
-      }
-
-      .user-info {
-        margin-left: 15px;
-
-        .u_title {
-          font-size: 18px;
-          line-height: 30px;
-        }
-      }
-    }
-
-    .content-section {
-      position: relative;
-      top: -50px;
-
-      .mine-actions {
-        margin: 15px 15px;
-        padding: 20px 0px;
-        border-radius: 8px;
-        background-color: white;
-
-        .action-item {
-          .icon {
-            font-size: 28px;
-          }
-
-          .text {
-            display: block;
-            font-size: 13px;
-            margin: 8px 0px;
-          }
-        }
-      }
-    }
-  }
+/* 局部微调 */
+.page {
+  padding-bottom: 120rpx; /* 为底部导航留出空间 */
+}
 </style>

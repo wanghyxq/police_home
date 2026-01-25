@@ -59,7 +59,7 @@
     methods: {
       // 用户登录
       handleUserLogin() {
-        this.$tab.navigateTo(`/pages/login`)
+        uni.navigateTo({ url: `/pages/login` })
       },
       // 获取图形验证码
       getCode() {

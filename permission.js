@@ -14,6 +14,18 @@ function checkWhite(url) {
   return whiteList.indexOf(path) !== -1
 }
 
+// 应用初始加载时的登录检查
+function checkInitialLogin() {
+  const pages = getCurrentPages()
+  if (pages.length > 0) {
+    const currentPage = pages[0]
+    const currentPath = `/${currentPage.route}`
+    if (!getToken() && !checkWhite(currentPath)) {
+      uni.reLaunch({ url: loginPage })
+    }
+  }
+}
+
 // 页面跳转验证拦截器
 let list = ["navigateTo", "redirectTo", "reLaunch", "switchTab"]
 list.forEach(item => {
@@ -37,3 +49,6 @@ list.forEach(item => {
     }
   })
 })
+
+// 调用初始登录检查
+checkInitialLogin()

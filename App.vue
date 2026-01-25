@@ -21,7 +21,7 @@
       },
       checkLogin() {
         if (!getToken()) {
-          this.$tab.reLaunch('/pages/login') 
+          uni.reLaunch({ url: '/pages/login' }) 
         }
       }
     }
@@ -29,5 +29,7 @@
 </script>
 
 <style lang="scss">
-  @import '@/static/scss/index.scss'
+  @import '/static/scss/index.scss';
+  @import '/static/css/fontawesome-all.min.css';
+  @import '/static/css/haircut.css';
 </style>

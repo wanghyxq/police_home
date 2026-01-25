@@ -20,13 +20,7 @@
         </view>
       </view>
     </view>
-    <view class="cu-list menu">
-      <view class="cu-item item-box">
-        <view class="content text-center" @click="handleLogout">
-          <text class="text-black">退出登录</text>
-        </view>
-      </view>
-    </view>
+    
   </view>
 </template>
 
@@ -39,20 +33,13 @@
     },
     methods: {
       handleToPwd() {
-        this.$tab.navigateTo('/pages/mine/pwd/index')
+        uni.navigateTo({ url: '/pages/mine/pwd/index' })
       },
       handleToUpgrade() {
         this.$modal.showToast('模块建设中~')
       },
       handleCleanTmp() {
         this.$modal.showToast('模块建设中~')
-      },
-      handleLogout() {
-        this.$modal.confirm('确定注销并退出系统吗？').then(() => {
-          this.$store.dispatch('LogOut').then(() => {}).finally(()=>{
-            this.$tab.reLaunch('/pages/index')
-          })
-        })
       }
     }
   }
