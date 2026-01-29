@@ -135,7 +135,13 @@ export default {
     loginSuccess(result) {
       // 设置用户信息
       this.$store.dispatch('GetInfo').then(res => {
-        uni.reLaunch({ url: '/pages/index' })
+        const roles = res.roles || []
+        // 判断是否为理发师角色 (假设角色key为 'barber')
+        if (roles.includes('barber')) {
+          uni.reLaunch({ url: '/pages/barber/dashboard' })
+        } else {
+          uni.reLaunch({ url: '/pages/index' })
+        }
       })
     }
   }

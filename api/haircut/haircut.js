@@ -73,3 +73,45 @@ export function verifyAppointment(data) {
     data: data
   })
 }
+
+// 获取理发师今日看板统计
+export function getBarberDashboardStats() {
+  return request({
+    url: '/api/haircut/barber/dashboard/stats',
+    method: 'get'
+  })
+}
+
+// 获取理发师工作台任务列表
+export function getBarberDashboardList(query) {
+  return request({
+    url: '/api/haircut/barber/dashboard/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 获取理发师历史预约列表
+export function getBarberHistoryList(query) {
+  return request({
+    url: '/api/haircut/barber/history/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 获取预约详情
+export function getAppointmentDetail(id) {
+  return request({
+    url: `/api/haircut/appointment/${id}/detail`,
+    method: 'get'
+  })
+}
+
+// 完成预约
+export function completeAppointment(id) {
+  return request({
+    url: `/api/haircut/appointment/${id}/complete`,
+    method: 'post'
+  })
+}

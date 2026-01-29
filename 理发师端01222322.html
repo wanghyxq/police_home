@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>理发工作台</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              police: {
+                light: "#1890FF", // 若依蓝
+                DEFAULT: "#002FA7", // 警蓝
+                dark: "#001D66",
+              },
+              portal: {
+                bg: "#F5F7FA",
+                card: "#FFFFFF",
+              },
+            },
+            fontFamily: {
+              mono: [
+                "ui-monospace",
+                "SFMono-Regular",
+                "Menlo",
+                "Monaco",
+                "Consolas",
+                "Liberation Mono",
+                "Courier New",
+                "monospace",
+              ],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: #f3f4f6;
+      }
+      .page {
+        display: none;
+        min-height: 100vh;
+        padding-bottom: 80px;
+      }
+      .page.active {
+        display: block;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .tag {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+      }
+
+      @media (min-width: 768px) {
+        #app-container {
+          max-width: 420px;
+          margin: 0 auto;
+          background: #fff;
+          min-height: 100vh;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+          position: relative;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-container">
+      <!-- 通用头部 -->
+      <header
+        id="global-header"
+        class="bg-police text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md"
+      >
+        <div class="flex items-center space-x-2" id="header-left-area">
+          <i class="fa-solid fa-shield-halved text-xl"></i>
+          <h1 class="font-bold text-lg tracking-wide" id="header-title">
+            理发工作台
+          </h1>
+        </div>
+        <div class="text-xs opacity-90 text-right" id="header-right-area">
+          <span id="current-user-role">未登录</span>
+        </div>
+      </header>
+
+      <!-- ================= 1. 登录页 (与民警端保持一致) ================= -->
+      <div id="page-login" class="page active bg-white">
+        <div class="flex flex-col items-center justify-center h-[85vh] px-8">
+          <div
+            class="w-24 h-24 bg-police/5 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner"
+          >
+            <i class="fa-solid fa-building-shield text-5xl text-police"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-1">理发工作台</h2>
+          <p class="text-gray-400 mb-10 text-sm tracking-wide">
+            内部综合服务门户 (理发师端)
+          </p>
+
+          <form id="login-form" class="w-full space-y-5">
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+              >
+                <i class="fa-solid fa-mobile-screen text-gray-400"></i>
+              </div>
+              <input
+                type="tel"
+                id="login-phone"
+                class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-police focus:ring-1 focus:ring-police transition bg-gray-50 focus:bg-white"
+                placeholder="请输入手机号"
+                value="18800000001"
+              />
+            </div>
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+              >
+                <i class="fa-solid fa-lock text-gray-400"></i>
+              </div>
+              <input
+                type="password"
+                id="login-password"
+                class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-police focus:ring-1 focus:ring-police transition bg-gray-50 focus:bg-white"
+                placeholder="请输入密码"
+                value="123"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-police text-white font-bold py-3.5 px-4 rounded-lg hover:bg-police-dark transition shadow-lg shadow-blue-900/20 mt-2"
+            >
+              登 录
+            </button>
+          </form>
+          <div class="mt-auto mb-6 text-center">
+            <p class="text-[10px] text-gray-300">仅限内部理发师使用</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 2. 理发师-工作台 (今日及未来任务) ================= -->
+      <div id="page-barber-dashboard" class="page bg-gray-50">
+        <!-- 顶部统计栏 (保持今日统计作为KPI) -->
+        <div
+          class="bg-white p-4 mb-3 shadow-sm grid grid-cols-3 gap-2 text-center sticky top-[60px] z-30"
+        >
+          <div>
+            <p class="text-xs text-gray-500 mb-1">今日预约</p>
+            <p class="text-lg font-bold text-gray-800" id="bs-today-total">0</p>
+          </div>
+          <div class="border-l border-r border-gray-100">
+            <p class="text-xs text-gray-500 mb-1">待服务</p>
+            <p class="text-lg font-bold text-police" id="bs-today-pending">0</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">已完成</p>
+            <p class="text-lg font-bold text-green-500" id="bs-today-completed">
+              0
+            </p>
+          </div>
+        </div>
+
+        <div class="px-4 pb-20">
+          <div class="flex items-center justify-between mb-3 pl-1">
+            <h3
+              class="font-bold text-gray-700 text-sm border-l-4 border-police pl-2"
+            >
+              近期预约 (含未来)
+            </h3>
+            <span class="text-[10px] text-gray-400" id="today-date-display"
+              >今日及未来</span
+            >
+          </div>
+
+          <div id="barber-task-list" class="space-y-3">
+            <!-- 动态任务列表 -->
+          </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <nav
+          class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 pb-safe z-40 max-w-[420px] mx-auto shadow-[0_-5px_15px_rgba(0,0,0,0.02)]"
+        >
+          <button
+            onclick="router.push('page-barber-dashboard')"
+            class="flex flex-col items-center text-police"
+          >
+            <i class="fa-solid fa-clipboard-list text-xl mb-1"></i>
+            <span class="text-[10px]">工作台</span>
+          </button>
+          <button
+            onclick="router.push('page-barber-history')"
+            class="flex flex-col items-center text-gray-400 hover:text-police transition"
+          >
+            <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i>
+            <span class="text-[10px]">历史预约</span>
+          </button>
+          <button
+            onclick="router.push('page-barber-me')"
+            class="flex flex-col items-center text-gray-400 hover:text-police transition"
+          >
+            <i class="fa-regular fa-user text-xl mb-1"></i>
+            <span class="text-[10px]">我的</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- ================= 3. 理发师-历史预约 (新增页面) ================= -->
+      <div id="page-barber-history" class="page bg-gray-50">
+        <div class="p-4">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="font-bold text-lg text-gray-700">历史预约记录</h2>
+          </div>
+
+          <!-- 筛选器 -->
+          <div
+            class="bg-white p-3 mb-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between"
+          >
+            <div class="flex-1 mr-4">
+              <label class="text-[10px] text-gray-400 block mb-1"
+                >筛选方式</label
+              >
+              <div class="flex space-x-2">
+                <select
+                  id="history-filter-type"
+                  class="text-xs border border-gray-200 rounded px-2 py-1 bg-white outline-none"
+                  onchange="toggleHistoryFilterInput()"
+                >
+                  <option value="month">按月</option>
+                  <option value="week">按周</option>
+                </select>
+                <input
+                  type="month"
+                  id="history-filter-month"
+                  class="w-28 text-sm font-mono border-b border-gray-200 outline-none text-gray-700 bg-transparent"
+                  onchange="loadBarberHistory()"
+                />
+                <input
+                  type="week"
+                  id="history-filter-week"
+                  class="w-32 text-sm font-mono border-b border-gray-200 outline-none text-gray-700 bg-transparent hidden"
+                  onchange="loadBarberHistory()"
+                />
+              </div>
+            </div>
+            <button
+              onclick="resetHistoryFilter()"
+              class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded"
+            >
+              重置
+            </button>
+          </div>
+
+          <div id="barber-history-list" class="space-y-3 pb-20"></div>
+        </div>
+
+        <!-- 底部导航 -->
+        <nav
+          class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 pb-safe z-40 max-w-[420px] mx-auto shadow-[0_-5px_15px_rgba(0,0,0,0.02)]"
+        >
+          <button
+            onclick="router.push('page-barber-dashboard')"
+            class="flex flex-col items-center text-gray-400 hover:text-police transition"
+          >
+            <i class="fa-solid fa-clipboard-list text-xl mb-1"></i>
+            <span class="text-[10px]">工作台</span>
+          </button>
+          <button
+            onclick="router.push('page-barber-history')"
+            class="flex flex-col items-center text-police"
+          >
+            <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i>
+            <span class="text-[10px]">历史预约</span>
+          </button>
+          <button
+            onclick="router.push('page-barber-me')"
+            class="flex flex-col items-center text-gray-400 hover:text-police transition"
+          >
+            <i class="fa-regular fa-user text-xl mb-1"></i>
+            <span class="text-[10px]">我的</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- ================= 4. 理发师-我的 (新增页面，与民警端风格一致) ================= -->
+      <div id="page-barber-me" class="page bg-gray-50">
+        <div
+          class="bg-white p-6 mb-3 flex items-center border-b border-gray-100"
+        >
+          <div
+            class="relative group cursor-pointer"
+            onclick="utils.showToast('点击了更换头像')"
+          >
+            <img
+              id="me-avatar-img"
+              src=""
+              class="w-16 h-16 rounded-full border-2 border-gray-100 object-cover shadow-sm"
+            />
+            <div
+              class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow border border-gray-100"
+            >
+              <i class="fa-solid fa-camera text-gray-400 text-[10px]"></i>
+            </div>
+          </div>
+          <div class="ml-4 flex-1">
+            <div class="flex items-center mb-1">
+              <h2
+                class="text-lg font-bold text-gray-800 mr-2"
+                id="me-name-display"
+              >
+                --
+              </h2>
+              <span
+                class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded border border-green-200"
+                >理发师</span
+              >
+            </div>
+            <p class="text-gray-500 text-xs" id="me-phone-text">--</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-gray-300"></i>
+        </div>
+
+        <div class="bg-white mb-3 border-y border-gray-100">
+          <div
+            class="flex items-center p-4 border-b border-gray-100 active:bg-gray-50 cursor-pointer"
+            onclick="utils.showToast('进入个人信息编辑')"
+          >
+            <i class="fa-regular fa-address-card text-police/80 w-6"></i>
+            <span class="text-sm flex-1 text-gray-700">个人信息</span>
+            <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+          </div>
+          <div class="flex items-center p-4 active:bg-gray-50 cursor-pointer">
+            <i class="fa-solid fa-calendar-check text-green-500/80 w-6"></i>
+            <span class="text-sm flex-1 text-gray-700">排班查询</span>
+            <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+          </div>
+        </div>
+
+        <div class="bg-white mb-6 border-y border-gray-100">
+          <div
+            class="flex items-center p-4 border-b border-gray-100 active:bg-gray-50 cursor-pointer"
+          >
+            <i class="fa-solid fa-shield-halved text-purple-500/80 w-6"></i>
+            <span class="text-sm flex-1 text-gray-700">账号安全</span>
+            <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+          </div>
+        </div>
+
+        <div class="px-4">
+          <button
+            onclick="router.push('page-login')"
+            class="w-full bg-white text-red-500 py-3 rounded-lg shadow-sm text-sm font-bold active:bg-gray-50 border border-gray-200"
+          >
+            退出登录
+          </button>
+        </div>
+
+        <!-- 底部导航 -->
+        <nav
+          class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 pb-safe z-40 max-w-[420px] mx-auto shadow-[0_-5px_15px_rgba(0,0,0,0.02)]"
+        >
+          <button
+            onclick="router.push('page-barber-dashboard')"
+            class="flex flex-col items-center text-gray-400 hover:text-police transition"
+          >
+            <i class="fa-solid fa-clipboard-list text-xl mb-1"></i>
+            <span class="text-[10px]">工作台</span>
+          </button>
+          <button
+            onclick="router.push('page-barber-history')"
+            class="flex flex-col items-center text-gray-400 hover:text-police transition"
+          >
+            <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i>
+            <span class="text-[10px]">历史预约</span>
+          </button>
+          <button
+            onclick="router.push('page-barber-me')"
+            class="flex flex-col items-center text-police"
+          >
+            <i class="fa-regular fa-user text-xl mb-1"></i>
+            <span class="text-[10px]">我的</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- 5. 详情页 (公用) -->
+      <div id="page-barber-detail" class="page bg-white">
+        <div class="p-5">
+          <div
+            class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100"
+          >
+            <h2 class="font-bold text-lg text-gray-800">预约详情</h2>
+            <span id="bd-status-badge" class="tag bg-gray-100 text-gray-600"
+              >未知状态</span
+            >
+          </div>
+
+          <div class="space-y-4 mb-8">
+            <div class="flex justify-between py-2">
+              <span class="text-gray-500 text-sm">预约编号</span>
+              <span class="text-gray-800 font-mono text-sm font-bold" id="bd-id"
+                >--</span
+              >
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-gray-500 text-sm">预约时间</span>
+              <span class="text-police font-bold font-mono text-lg" id="bd-time"
+                >--</span
+              >
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-gray-500 text-sm">客户</span>
+              <!-- 隐私处理：仅显示手机号 -->
+              <span
+                class="text-gray-800 text-sm font-bold font-mono"
+                id="bd-user-phone"
+                >--</span
+              >
+            </div>
+          </div>
+
+          <!-- 评价内容展示区 -->
+          <div
+            id="bd-review-section"
+            class="bg-gray-50 rounded-lg p-4 hidden border border-gray-100 mb-20"
+          >
+            <h3 class="font-bold text-sm mb-3 text-gray-700 flex items-center">
+              <i class="fa-solid fa-comment-dots mr-2 text-police"></i>用户评价
+            </h3>
+            <div
+              class="flex items-center mb-2 text-yellow-500 text-sm"
+              id="bd-stars"
+            ></div>
+            <p
+              class="text-sm text-gray-600 bg-white p-3 rounded border border-gray-100"
+              id="bd-comment"
+            >
+              暂无文字评价
+            </p>
+          </div>
+
+          <!-- 底部操作按钮 -->
+          <div
+            class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t max-w-[420px] mx-auto shadow-lg z-50"
+          >
+            <button
+              id="bd-action-btn"
+              class="w-full bg-police text-white font-bold py-3 rounded-lg shadow-md hidden"
+            >
+              确认完成服务
+            </button>
+            <button
+              onclick="router.back()"
+              class="w-full bg-gray-100 text-gray-600 font-bold py-3 rounded-lg mt-2 border border-gray-200"
+            >
+              返回列表
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全局提示框 (Toast) -->
+      <div
+        id="toast"
+        class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-xl z-[100] transition-opacity duration-300 opacity-0 pointer-events-none text-sm flex items-center"
+      >
+        <i class="fa-solid fa-circle-exclamation mr-2"></i>
+        <span id="toast-msg">提示信息</span>
+      </div>
+
+      <!-- 演示用快速切换按钮 -->
+      <div class="fixed bottom-24 right-4 z-[100] group">
+        <button
+          class="bg-gray-800 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition border-2 border-white"
+        >
+          <i class="fa-solid fa-user-secret"></i>
+        </button>
+        <div
+          class="absolute bottom-14 right-0 w-48 bg-white shadow-xl rounded-lg p-2 hidden group-hover:block border border-gray-200 text-sm"
+        >
+          <div
+            class="text-[10px] font-bold text-gray-400 mb-2 px-2 uppercase tracking-wider"
+          >
+            Debug: 快速切换
+          </div>
+          <button
+            onclick="demoSwitch('barber')"
+            class="block w-full text-left px-2 py-2 hover:bg-gray-100 rounded text-green-700"
+          >
+            <i class="fa-solid fa-scissors mr-2"></i>理发师 (张师傅)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- 1. 数据层 ---
+      const DB = {
+        users: [
+          {
+            id: "b1",
+            phone: "18800000001",
+            password: "123",
+            name: "1号理发师",
+            role: "barber",
+            realName: "张师傅",
+            avatar:
+              "https://ui-avatars.com/api/?name=B1&background=faad14&color=fff",
+          },
+          // 模拟用户数据用于显示
+          { id: "u1", name: "王建国", phone: "13812345678" },
+          { id: "u2", name: "李强", phone: "13987654321" },
+        ],
+        appointments: [
+          {
+            id: "A_TODAY_1",
+            userId: "u2",
+            barberId: "b1",
+            date: new Date().toISOString().split("T")[0],
+            time: "09:00",
+            status: "completed",
+            rating: 5,
+            comment: "手艺很棒，速度快！",
+          },
+          // 增加一条明天的预约，用于演示未来预约展示
+          {
+            id: "A_TOMORROW",
+            userId: "u1",
+            barberId: "b1",
+            date: new Date(Date.now() + 86400000).toISOString().split("T")[0],
+            time: "10:00",
+            status: "booked",
+            rating: null,
+            comment: "",
+          },
+          {
+            id: "A_TODAY_2",
+            userId: "u1",
+            barberId: "b1",
+            date: new Date().toISOString().split("T")[0],
+            time: "14:00",
+            status: "booked",
+            rating: null,
+            comment: "",
+          },
+          {
+            id: "A_YESTERDAY",
+            userId: "u1",
+            barberId: "b1",
+            date: new Date(Date.now() - 86400000).toISOString().split("T")[0],
+            time: "15:00",
+            status: "completed",
+            rating: 4,
+            comment: "还不错",
+          },
+          {
+            id: "A_LAST_MONTH",
+            userId: "u2",
+            barberId: "b1",
+            date: "2023-09-15",
+            time: "10:00",
+            status: "completed",
+            rating: 5,
+            comment: "老顾客了",
+          },
+        ],
+        currentUser: null,
+
+        getUser(phone, password) {
+          return this.users.find(
+            (u) => u.phone === phone && u.password === password,
+          );
+        },
+        getUserById(id) {
+          return this.users.find((u) => u.id === id);
+        },
+      };
+
+      // --- 2. 路由与工具 ---
+      const router = {
+        history: [],
+        push(pageId, param) {
+          this.history.push({ id: pageId, param: param });
+          this.render(pageId, param);
+        },
+        back() {
+          if (this.history.length > 1) {
+            this.history.pop();
+            const prev = this.history[this.history.length - 1];
+            this.render(prev.id, prev.param);
+          }
+        },
+        render(pageId, param) {
+          document
+            .querySelectorAll(".page")
+            .forEach((p) => p.classList.remove("active"));
+          document.getElementById(pageId).classList.add("active");
+          window.scrollTo(0, 0);
+
+          // 页面加载钩子
+          if (pageId === "page-barber-dashboard") loadBarberDashboard();
+          if (pageId === "page-barber-history") loadBarberHistory();
+          if (pageId === "page-barber-me") loadBarberMe();
+          if (pageId === "page-barber-detail" && param) loadBarberDetail(param);
+
+          updateHeader(pageId);
+        },
+      };
+
+      const utils = {
+        showToast(msg) {
+          const el = document.getElementById("toast");
+          document.getElementById("toast-msg").innerText = msg;
+          el.classList.remove("opacity-0");
+          setTimeout(() => el.classList.add("opacity-0"), 2500);
+        },
+        maskPhone(phone) {
+          return phone ? phone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2") : "";
+        },
+        formatDate(d) {
+          return d.toISOString().split("T")[0];
+        },
+        getWeekNumber(d) {
+          d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+          d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+          var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+          var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+          return [d.getUTCFullYear(), weekNo];
+        },
+      };
+
+      // --- 3. 业务逻辑 ---
+
+      // 登录 (修改为蓝色风格，与民警端一致)
+      document.getElementById("login-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const user = DB.getUser(
+          document.getElementById("login-phone").value,
+          document.getElementById("login-password").value,
+        );
+        if (user) {
+          if (user.role === "barber") {
+            DB.currentUser = user;
+            utils.showToast("登录成功");
+            router.push("page-barber-dashboard");
+          } else {
+            alert("非理发师账号，请使用民警端登录");
+          }
+        } else {
+          utils.showToast("手机号或密码错误");
+        }
+      });
+
+      // --- 4. 理发师端逻辑 ---
+
+      // 4.1 工作台 (今日及未来任务)
+      function loadBarberDashboard() {
+        const uid = DB.currentUser.id;
+        const todayStr = utils.formatDate(new Date());
+
+        // 统计数据 (仍然聚焦于今日的KPI)
+        const todayForStats = DB.appointments.filter(
+          (a) =>
+            a.barberId === uid &&
+            a.date === todayStr &&
+            a.status !== "cancelled",
+        );
+        const completedCount = todayForStats.filter(
+          (a) => a.status === "completed" || a.status === "pending_eval",
+        ).length;
+        const pendingCount = todayForStats.filter(
+          (a) => a.status === "booked",
+        ).length;
+
+        document.getElementById("bs-today-total").innerText =
+          todayForStats.length;
+        document.getElementById("bs-today-pending").innerText = pendingCount;
+        document.getElementById("bs-today-completed").innerText =
+          completedCount;
+
+        // 列表数据：展示今日及未来
+        const upcomingList = DB.appointments.filter(
+          (a) =>
+            a.barberId === uid &&
+            a.date >= todayStr &&
+            a.status !== "cancelled",
+        );
+
+        renderTaskList(upcomingList, "barber-task-list");
+      }
+
+      // 4.2 历史预约 (筛选)
+      function toggleHistoryFilterInput() {
+        const type = document.getElementById("history-filter-type").value;
+        const monthInput = document.getElementById("history-filter-month");
+        const weekInput = document.getElementById("history-filter-week");
+
+        if (type === "month") {
+          monthInput.classList.remove("hidden");
+          weekInput.classList.add("hidden");
+        } else {
+          monthInput.classList.add("hidden");
+          weekInput.classList.remove("hidden");
+        }
+        loadBarberHistory();
+      }
+
+      function loadBarberHistory() {
+        const uid = DB.currentUser.id;
+        const filterType = document.getElementById("history-filter-type").value;
+        // 历史记录定义为小于今天的订单
+        const todayStr = utils.formatDate(new Date());
+        let list = DB.appointments.filter(
+          (a) =>
+            a.barberId === uid && a.date < todayStr && a.status !== "cancelled",
+        );
+
+        if (filterType === "month") {
+          const val = document.getElementById("history-filter-month").value;
+          if (val) list = list.filter((a) => a.date.startsWith(val));
+        } else {
+          const val = document.getElementById("history-filter-week").value; // format: 2023-W42
+          if (val) {
+            const [y, w] = val.split("-W");
+            list = list.filter((a) => {
+              const d = new Date(a.date);
+              const [ay, aw] = utils.getWeekNumber(d);
+              return ay == y && aw == w;
+            });
+          }
+        }
+
+        // 倒序排列
+        list.sort(
+          (a, b) =>
+            b.date.localeCompare(a.date) || b.time.localeCompare(a.time),
+        );
+        renderTaskList(list, "barber-history-list");
+      }
+
+      function resetHistoryFilter() {
+        document.getElementById("history-filter-month").value = "";
+        document.getElementById("history-filter-week").value = "";
+        loadBarberHistory();
+      }
+
+      // 通用列表渲染 (隐私保护：只展示手机号)
+      function renderTaskList(data, containerId) {
+        const container = document.getElementById(containerId);
+        if (data.length === 0) {
+          container.innerHTML =
+            '<div class="text-center text-gray-400 py-10 text-xs">暂无记录</div>';
+          return;
+        }
+
+        container.innerHTML = data
+          .map((a) => {
+            const u = DB.getUserById(a.userId);
+            let statusBadge = "";
+            if (a.status === "booked")
+              statusBadge =
+                '<span class="text-green-600 font-bold">待服务</span>';
+            else if (a.status === "pending_eval")
+              statusBadge = '<span class="text-orange-500">待评价</span>';
+            else statusBadge = '<span class="text-gray-400">已完成</span>';
+
+            return `
+                <div onclick="router.push('page-barber-detail', '${a.id}')" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center active:bg-gray-50 cursor-pointer">
+                    <div>
+                        <div class="flex items-center mb-1">
+                            <span class="font-mono text-xl font-bold text-police mr-2">${a.time}</span>
+                            <span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">${a.date}</span>
+                        </div>
+                        <!-- 隐私修改：只显示手机号 -->
+                        <p class="text-sm text-gray-600 font-bold font-mono"><i class="fa-solid fa-mobile-screen mr-1 text-gray-400"></i>${u.phone}</p>
+                    </div>
+                    <div class="text-right flex items-center">
+                        <p class="text-xs mr-2">${statusBadge}</p>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                    </div>
+                </div>
+            `;
+          })
+          .join("");
+      }
+
+      // 4.3 个人中心
+      function loadBarberMe() {
+        if (!DB.currentUser) return;
+        document.getElementById("me-name-display").innerText =
+          DB.currentUser.realName;
+        document.getElementById("me-phone-text").innerText = utils.maskPhone(
+          DB.currentUser.phone,
+        );
+        document.getElementById("me-avatar-img").src = DB.currentUser.avatar;
+      }
+
+      // 4.4 详情页 (隐私修改)
+      function loadBarberDetail(aid) {
+        const appt = DB.appointments.find((a) => a.id === aid);
+        const user = DB.getUserById(appt.userId);
+
+        document.getElementById("bd-id").innerText = appt.id;
+        document.getElementById("bd-time").innerText =
+          `${appt.date} ${appt.time}`;
+        // 详情页也只展示手机号，不展示姓名
+        document.getElementById("bd-user-phone").innerText = user.phone;
+
+        const badge = document.getElementById("bd-status-badge");
+        const actionBtn = document.getElementById("bd-action-btn");
+        const reviewSec = document.getElementById("bd-review-section");
+
+        // Reset UI
+        actionBtn.classList.add("hidden");
+        reviewSec.classList.add("hidden");
+
+        if (appt.status === "booked") {
+          badge.className = "tag bg-green-100 text-green-700";
+          badge.innerText = "待服务";
+          actionBtn.classList.remove("hidden");
+          actionBtn.innerText = "确认完成服务";
+          actionBtn.onclick = () => {
+            if (confirm("确认理发已完成？")) {
+              appt.status = "pending_eval";
+              utils.showToast("状态已更新，等待用户评价");
+              loadBarberDetail(aid);
+            }
+          };
+        } else if (appt.status === "pending_eval") {
+          badge.className = "tag bg-orange-100 text-orange-700";
+          badge.innerText = "待评价";
+        } else if (appt.status === "completed") {
+          badge.className = "tag bg-gray-100 text-gray-500";
+          badge.innerText = "已完成";
+          reviewSec.classList.remove("hidden");
+          document.getElementById("bd-stars").innerHTML = Array(5)
+            .fill(0)
+            .map(
+              (_, i) =>
+                `<i class="${i < appt.rating ? "fa-solid" : "fa-regular"} fa-star"></i>`,
+            )
+            .join("");
+          document.getElementById("bd-comment").innerText = appt.comment;
+        }
+      }
+
+      // --- 6. 辅助与Header ---
+      function updateHeader(pageId) {
+        const titleEl = document.getElementById("header-title");
+        const rightEl = document.getElementById("header-right-area");
+        const leftEl = document.getElementById("header-left-area");
+
+        // 默认恢复
+        leftEl.innerHTML = `<i class="fa-solid fa-shield-halved text-xl"></i><h1 class="font-bold text-lg tracking-wide ml-2" id="header-title">理发工作台</h1>`;
+
+        if (pageId === "page-login") {
+          document.getElementById("global-header").style.display = "none";
+        } else {
+          document.getElementById("global-header").style.display = "flex";
+          rightEl.innerText = DB.currentUser?.realName || "";
+
+          if (pageId === "page-barber-detail") {
+            leftEl.innerHTML = `<button onclick="router.back()" class="flex items-center text-sm"><i class="fa-solid fa-arrow-left mr-1"></i> 返回</button>`;
+            titleEl.innerText = "详情";
+          } else if (pageId === "page-barber-me") {
+            titleEl.innerText = "个人中心";
+          } else if (pageId === "page-barber-history") {
+            titleEl.innerText = "历史预约";
+          }
+        }
+      }
+
+      window.demoSwitch = (r) => {
+        const p = document.getElementById("login-phone");
+        const w = document.getElementById("login-password");
+        if (r === "barber") {
+          p.value = "18800000001";
+          w.value = "123";
+        }
+        document
+          .getElementById("login-form")
+          .dispatchEvent(new Event("submit"));
+      };
+
+      router.init = () => router.push("page-login");
+      router.init();
+    </script>
+  </body>
+</html>

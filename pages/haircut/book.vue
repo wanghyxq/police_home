@@ -2,21 +2,27 @@
   <view class="page bg-white min-h-screen pb-safe">
     <view class="p-4">
       <!-- 顶部导航辅助 (如果非自定义导航栏可隐藏) -->
-      <view class="mb-4" @click="goBack">
+      <!-- <view class="mb-4" @click="goBack">
         <text class="text-gray-500 text-sm bg-gray-100 px-3 py-1 rounded-full inline-flex items-center">
           <i class="fa-solid fa-chevron-left mr-1"></i> 返回上一步
         </text>
-      </view>
+      </view> -->
 
       <!-- 理发师信息卡片 -->
-      <view class="flex items-center mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+      <view class="flex items-center mb-6 mt-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
         <view
-          class="w-14 h-14 bg-white rounded-full flex-shrink-0 flex items-center justify-center mr-4 shadow-sm text-police border border-gray-100">
-          <i class="fa-solid fa-user-tie text-2xl"></i>
+          class="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center mr-4 shadow-sm border border-gray-100 overflow-hidden bg-white">
+          <image v-if="barberAvatar"
+            :src="barberAvatar && barberAvatar.startsWith('http') ? barberAvatar : (baseUrl + (barberAvatar || ''))"
+            class="w-full h-full" mode="aspectFill"></image>
+          <i v-else class="fa-solid fa-user-tie text-2xl text-police"></i>
         </view>
         <view>
           <text class="text-lg font-bold block">{{ barberName }}</text>
-          <text class="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full inline-block mt-1">空闲中</text>
+          <!-- <text class="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full inline-block mt-1">空闲中</text> -->
+          <text class="text-xs text-gray-500 mt-1 block">
+            <i class="fa-solid fa-phone mr-1"></i>{{ barberPhone || '暂无联系方式' }}
+          </text>
         </view>
       </view>
 
@@ -72,12 +78,17 @@
 
 <script>
 import { getBarberCalendar, getAppointmentSlots, submitAppointment } from '@/api/haircut/haircut.js';
+import config from '@/config.js';
 
 export default {
   data() {
     return {
       barberId: null,
       barberName: '',
+      barberPhone: '',
+      barberAvatar: '',
+      baseUrl: config.baseUrl,
+      timeInterval: 15, // 默认15分钟
       dateList: [],
       timeSlots: [],
       selectedDate: '',
@@ -88,9 +99,14 @@ export default {
   onLoad(options) {
     this.barberId = options.id;
     this.barberName = options.name;
+    this.barberPhone = options.phone || '';
     if (options.interval) {
       this.timeInterval = options.interval;
     }
+    if (options.avatar) {
+      this.barberAvatar = options.avatar;
+    }
+
     this.initCalendar();
   },
   methods: {

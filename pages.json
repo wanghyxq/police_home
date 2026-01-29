@@ -22,7 +22,7 @@
     {
       "path": "pages/mine/index",
       "style": {
-        "navigationBarTitleText": "我的"
+        "navigationBarTitleText": "个人中心"
       }
     },
     {
@@ -90,6 +90,24 @@
       "style": {
         "navigationBarTitleText": "个人中心",
         "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/barber/dashboard",
+      "style": {
+        "navigationBarTitleText": "理发工作台"
+      }
+    },
+    {
+      "path": "pages/barber/history",
+      "style": {
+        "navigationBarTitleText": "历史预约"
+      }
+    },
+    {
+      "path": "pages/barber/detail",
+      "style": {
+        "navigationBarTitleText": "预约详情"
       }
     }
   ]

@@ -7,8 +7,8 @@
         <text class="font-bold text-lg ml-2">民警之家</text>
       </view>
       <view class="text-xs opacity-90">
-        <text class=" text-white px-2 py-1 rounded text-10" v-if="user">
-          {{ maskPhone(user.phone) }}
+        <text class="bg-blue-800 text-white px-2 py-1 rounded text-10" v-if="name">
+			<i class="fa-solid fa-user mr-1"></i> {{ name }}
         </text>
       </view>
     </view>
@@ -40,25 +40,29 @@
         <view class="flex flex-col items-center" style="opacity: 50%;">
           <view
             class="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-2 border border-orange-100">
-            <i class="fa-solid fa-utensils text-xl"></i></view>
+            <i class="fa-solid fa-utensils text-xl"></i>
+          </view>
           <text class="text-xs text-gray-600">智慧食堂</text>
         </view>
         <view class="flex flex-col items-center" style="opacity: 50%;">
           <view
             class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-2 border border-green-100">
-            <i class="fa-solid fa-cake text-xl"></i></view>
+            <i class="fa-solid fa-cake text-xl"></i>
+          </view>
           <text class="text-xs text-gray-600">智慧烘培</text>
         </view>
         <view class="flex flex-col items-center" style="opacity: 50%;">
           <view
             class="w-12 h-12 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center mb-2 border border-yellow-100">
-            <i class="fa-solid fa-hand-holding-medical text-xl"></i></view>
+            <i class="fa-solid fa-hand-holding-medical text-xl"></i>
+          </view>
           <text class="text-xs text-gray-600">中医理疗</text>
         </view>
         <view class="flex flex-col items-center" style="opacity: 50%;">
           <view
             class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-2 border border-purple-100">
-            <i class="fa-solid fa-person-dress-burst text-xl"></i></view>
+            <i class="fa-solid fa-person-dress-burst text-xl"></i>
+          </view>
           <text class="text-xs text-gray-600">洗衣预约</text>
         </view>
       </view>
@@ -100,12 +104,14 @@
 </template>
 
 <script>
-import DB from '@/common/haircut_data.js';
-
 export default {
-  data() { return { user: DB.currentUser }; },
+  data() { return {}; },
+  computed: {
+    name() {
+      return this.$store.state.user.name;
+    }
+  },
   methods: {
-    maskPhone(p) { return p ? p.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2") : ""; },
     goBarber() { uni.navigateTo({ url: '/pages/haircut/barber-list' }); },
     goProfile() { uni.redirectTo({ url: '/pages/mine/index' }); }
   }

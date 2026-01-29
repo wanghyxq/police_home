@@ -15,7 +15,7 @@
         <view
           class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow border border-gray-100 w-6 h-6 flex items-center justify-center"
           @click.stop="handleToAvatar">
-          <i class="fa-solid fa-camera text-gray-400 text-10px"></i>
+          <i class="fa-solid fa-camera text-gray-400 text-10"></i>
         </view>
       </view>
 
@@ -28,7 +28,8 @@
         <view v-else>
           <view class="flex items-center mb-1">
             <text class="text-lg font-bold text-gray-800 mr-2">{{ name }}</text>
-            <text class="bg-blue-50 text-police text-10px px-2 py-0.5 rounded border border-blue-100">民警</text>
+            <text class="bg-blue-50 text-police text-10 px-2 py-0.5 rounded border border-blue-100">{{ roleName
+            }}</text>
           </view>
           <text class="text-gray-500 text-xs">个人信息 ></text>
         </view>
@@ -43,21 +44,22 @@
         <text class="text-sm flex-1 text-gray-700">编辑资料</text>
         <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
       </view>
-      <view class="flex items-center p-4" hover-class="bg-gray-50" @click="handleToAvatar">
+      <view class="flex items-center p-4 border-b border-gray-100" hover-class="bg-gray-50" @click="handleToAvatar">
         <i class="fa-solid fa-image-portrait text-green-500 opacity-80 w-6 text-lg"></i>
         <text class="text-sm flex-1 text-gray-700">修改头像</text>
         <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
       </view>
+	  <view class="flex items-center p-4 border-b border-gray-100" hover-class="bg-gray-50" @click="handleToSetting">
+	    <i class="iconfont icon-setting text-purple-500 opacity-80 w-6 text-lg"></i>
+	    <text class="text-sm flex-1 text-gray-700">应用设置</text>
+	    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+	  </view>
     </view>
 
     <!-- 菜单列表组 2 -->
-    <view class="bg-white mb-6 border-y border-gray-100">
-      <view class="flex items-center p-4 border-b border-gray-100" hover-class="bg-gray-50" @click="handleToSetting">
-        <i class="iconfont icon-setting text-purple-500 opacity-80 w-6 text-lg"></i>
-        <text class="text-sm flex-1 text-gray-700">应用设置</text>
-        <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
-      </view>
-    </view>
+<!--    <view class="bg-white mb-6 border-y border-gray-100">
+      
+    </view> -->
 
     <!-- 退出登录按钮 -->
     <view class="mt-6" v-if="name">
@@ -66,7 +68,8 @@
     </view>
 
     <!-- 底部导航 (固定) -->
-    <view class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 pb-safe z-40 shadow-lg">
+    <view v-if="!isBarber"
+      class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 pb-safe z-40 shadow-lg">
       <view class="flex flex-col items-center text-gray-400" @click="goHome">
         <i class="fa-solid fa-house text-xl mb-1"></i>
         <text class="text-10">首页</text>
@@ -76,11 +79,17 @@
         <text class="text-10">我的</text>
       </view>
     </view>
+
+    <!-- 理发师端底部导航 -->
+    <barber-tabbar v-if="isBarber" :current="2"></barber-tabbar>
   </view>
 </template>
 
 <script>
+import BarberTabbar from '@/pages/barber/components/barber-tabbar.vue';
+
 export default {
+  components: { BarberTabbar },
   data() {
     return {
     }
@@ -94,6 +103,16 @@ export default {
     },
     windowHeight() {
       return uni.getSystemInfoSync().windowHeight - 50
+    },
+    roleName() {
+      const roles = this.$store.state.user.roles || [];
+      if (roles.includes('admin')) return '管理员';
+      if (roles.includes('barber')) return '理发师';
+      return '民警';
+    },
+    isBarber() {
+      const roles = this.$store.state.user.roles || [];
+      return roles.includes('barber');
     }
   },
   methods: {

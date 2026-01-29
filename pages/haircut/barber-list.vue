@@ -115,10 +115,11 @@ export default {
     },
     handleBook(barber) {
       const name = barber.nickName || barber.userName;
-      const timeInterval = barber.timeInterval || 20; // 默认20分钟
+      const timeInterval = barber.timeInterval || 15; // 默认15分钟
+      const phone = barber.phone || '';
       uni.navigateTo({
         // 使用 encodeURIComponent 对中文参数进行编码
-        url: `/pages/haircut/book?id=${barber.userId}&name=${encodeURIComponent(name)}&interval=${timeInterval}`
+        url: `/pages/haircut/book?id=${barber.userId}&name=${encodeURIComponent(name)}&interval=${timeInterval}&phone=${encodeURIComponent(phone)}&avatar=${encodeURIComponent(barber.avatar || '')}`
       });
     },
     handleImageError(index) {
